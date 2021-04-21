@@ -28,7 +28,7 @@ A server control hub application.
 
 ## Remote Client (Python)
 *In seperate repo*
-- [ ] has configs to tell it what to backup to a backups directory
+- [X] has configs to tell it what to backup to a backups directory
 - [ ] should have install script
-- [ ] waits for packet telling it to initiate a backup or system update
-- [ ] reports backup dir size and disk usage
+- [X] waits for packet telling it to initiate a backup or system update
+- [X] reports backup dir size and disk usage
