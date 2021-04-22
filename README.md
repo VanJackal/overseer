@@ -34,6 +34,9 @@ Field|Type|Description
 -----|----|-----------
 dateCode|integer|Date code of form YYYYMMDD
 
+## /api/backups/usage/{serverID} GET
+Gets the current disk usage on the server identified by `serverID`
+
 -----
 
 # TODO / Feature List
