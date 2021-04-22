@@ -12,6 +12,16 @@ class DatabaseHandler:
             servers['servers'].append(server['sid'])
         return servers
 
+    def getMaster():
+        return self.db.servers.find_one({'master':True})
+
+    def getSlaves():
+        serversIter = self.db.servers.find({"slave":True})
+        slaves = []
+        for server in serversIter:
+            slaves.append(server)
+        return slaves
+
     def addServer(self, serverData):
         self.db.servers.insert_one(serverData)
 
