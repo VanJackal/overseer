@@ -3,6 +3,14 @@ A server control hub application.
 
 -----
 
+# API Documentation
+*Still WIP*
+
+## /api/config/<serverId>
+
+
+-----
+
 # TODO / Feature List
 
 ## Frontend Control (React.js)
