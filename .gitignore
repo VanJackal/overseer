@@ -1,4 +1,6 @@
 *~
+__pycache__/
+*.swp
 # Logs
 logs
 *.log

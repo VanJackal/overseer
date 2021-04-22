@@ -1,11 +1,13 @@
 #!/bin/python
-import yaml
+import yaml, requests
 from flask import Flask, request
+import databaseHandler
 
 with open("config.yaml") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
 app = Flask(__name__)
+dbh = databaseHandler.DatabaseHandler(config['databaseAddress'])
 
 @app.route('/api/config/<serverID>', methods=['GET','PUT'])
 def remoteConfig(serverID):
@@ -26,10 +28,21 @@ def localConfig():
 @app.route('/api/config/servers',methods=['GET', 'POST'])
 def configServers():
     if request.method == 'GET':
-        pass
+        return dbh.getServers()
     elif request.method == 'POST':
-        pass
-    return '<p>not yet implemented</p>'
+        data = request.get_json()
+        dbh.addServer(data)
+        return {'success':True}
+
+@app.route('/api/config/servers/<serverID>', methods=['PUT', 'DELETE'])
+def editServerConfig(serverID):
+    if request.method == 'PUT':
+        data = request.get_json()
+        dbh.editServer(data,serverID)
+        return {'success':True}
+    elif request.method == 'DELETE':
+        dbh.removeServer(serverID)
+        return {'success':True}
 
 @app.route('/api/backups/start', methods=['POST'])
 def startBackup():
