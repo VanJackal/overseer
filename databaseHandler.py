@@ -20,3 +20,7 @@ class DatabaseHandler:
 
     def removeServer(self, serverID):
         self.db.servers.delete_one({'sid':serverID})
+
+    def serverFromID(self, serverID):
+        server = self.db.servers.find_one({'sid':serverID})
+        return server['serverAddr']

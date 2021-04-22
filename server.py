@@ -12,9 +12,15 @@ dbh = databaseHandler.DatabaseHandler(config['databaseAddress'])
 @app.route('/api/config/<serverID>', methods=['GET','PUT'])
 def remoteConfig(serverID):
     if request.method == 'GET':
-        pass
+        addr = dbh.serverFromID(serverID)
+        res = requests.get(f"http://{addr}/config")
+        return res.json() 
     elif request.method == 'PUT':
-        pass
+        data = request.get_json()
+        addr = dbh.serverFromID(serverID)
+        print(data)
+        res = requests.put(f"http://{addr}/config",json = data)
+        return res.json()
     return '<p>not yet implemented</p>'
 
 @app.route('/api/config', methods=['GET','PUT'])
