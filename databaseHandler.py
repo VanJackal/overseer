@@ -12,10 +12,10 @@ class DatabaseHandler:
             servers['servers'].append(server['sid'])
         return servers
 
-    def getMaster():
+    def getMaster(self):
         return self.db.servers.find_one({'master':True})
 
-    def getSlaves():
+    def getSlaves(self):
         serversIter = self.db.servers.find({"slave":True})
         slaves = []
         for server in serversIter:
@@ -33,4 +33,4 @@ class DatabaseHandler:
 
     def serverFromID(self, serverID):
         server = self.db.servers.find_one({'sid':serverID})
-        return server['serverAddr']
+        return server

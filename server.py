@@ -12,23 +12,21 @@ dbh = databaseHandler.DatabaseHandler(config['databaseAddress'])
 @app.route('/api/config/<serverID>', methods=['GET','PUT'])
 def remoteConfig(serverID):
     if request.method == 'GET':
-        addr = dbh.serverFromID(serverID)
+        addr = dbh.serverFromID(serverID)['serverAddr']
         res = requests.get(f"http://{addr}/config")
         return res.json() 
     elif request.method == 'PUT':
         data = request.get_json()
-        addr = dbh.serverFromID(serverID)
+        addr = dbh.serverFromID(serverID)['serverAddr']
         print(data)
         res = requests.put(f"http://{addr}/config",json = data)
         return res.json()
 
-@app.route('/api/config', methods=['GET','PUT'])
-def localConfig():
-    if request.method == 'GET':
-        pass
-    elif request.method == 'PUT':
-        pass
-    return '<p>not yet implemented</p>'
+@app.route('/api/config/servers/<serverID>', methods=['GET'])
+def getServerConf(serverID):
+    res = dbh.serverFromID(serverID)
+    res.pop('_id')
+    return res
 
 @app.route('/api/config/servers',methods=['GET', 'POST'])
 def configServers():
@@ -54,7 +52,7 @@ def startBackup():
     master = dbh.getMaster()
     slaves = dbh.getSlaves()
     servers = dbh.getServers()['servers']
-    dateCode = int(datetime.date.strftime('%Y%m%d'))
+    dateCode = int(datetime.datetime.now().strftime('%Y%m%d') + '01')
     
     backupServers(servers, dateCode)
     syncToMaster(servers, master)
@@ -64,9 +62,9 @@ def startBackup():
             "dateCode":dateCode
             }
 
-@app.route('/api/backups/purge', methods=['POST'])
+@app.route('/api/backups/purge', methods=['DELETE'])
 def purgeBackup():
-    servers = dbh.getServers()
+    servers = dbh.getServers()['servers']
     dateCode = int(request.get_json()['dateCode'])
     data = {"date":dateCode}
     for server in servers:
@@ -82,13 +80,16 @@ def getUsage(serverID):
 
 def backupServers(servers, dateCode):
     for server in servers:
-        addr = server["serverAddr"]
+        addr = dbh.serverFromID(server)["serverAddr"]
         data = {"uid":dateCode}
         requests.post(f"http://{addr}/backup/start", json = data)
 
 def syncToMaster(servers, master):
     masterAddr = master['serverAddr']
-    data = {"dest":masterAddr}
+    backupsDir = requests.get(f"http://{masterAddr}/backup/parent").json()['parentDir']
+    masterAddr = masterAddr[:-5]
+    destination = f"overseer@{masterAddr}:{backupsDir}"
+    data = {"dest":destination}
     for server in servers:
         addr = dbh.serverFromID(server)['serverAddr']
         requests.post(f"http://{addr}/backup/sync", json = data)
@@ -96,5 +97,10 @@ def syncToMaster(servers, master):
 def syncMasterToSlaves(slaves,master):
     masterAddr = master['serverAddr']
     for slave in slaves:
-        data = {"dest":slave['serverAddr']}
+        addr = slave['serverAddr']
+        backupsDir = requests.get(f"http://{addr}/backup/parent").json()['parentDir']
+        addr = addr[:-5]
+        destination = f"overseer@{addr}:{backupsDir}"
+        data = {"dest":destination}
+        print(data)
         requests.post(f"http://{masterAddr}/backup/sync", json = data)
